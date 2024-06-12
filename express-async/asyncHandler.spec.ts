@@ -15,6 +15,15 @@ describe('asyncHandler', () => {
         expect(it.length).toEqual(4);
     });
 
+    it('supports custom handler', async () => {
+        const handler = async (req: express.Request & { value: number }, res: express.Response) => req.value;
+        const it = asyncHandler(handler);
+        expect(it.length).toEqual(3);
+        const any = { value: 42 } as any;
+        expect(await it(any, any, any)).toEqual(any.value);
+    });
+
+
     it('catches non async promise problems', async () => {
         const any = {} as any;
         const handler = (req: express.Request, res: express.Response): Promise<void> => {
@@ -31,7 +40,6 @@ describe('asyncHandler', () => {
 });
 
 describe('boundAsyncHandler', () => {
-
     class MyController {
         value: object | number | undefined;
 
@@ -41,6 +49,14 @@ describe('boundAsyncHandler', () => {
 
         async getT(req: express.Request<{value: number}>, res: express.Response, next: express.NextFunction) {
             return req.params.value;
+        }
+
+        async getCustom(req: express.Request & {value: number}, res: express.Response, next: express.NextFunction) {
+            return req.value;
+        }
+
+        async onError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
+            return err;
         }
     }
 
@@ -59,6 +75,22 @@ describe('boundAsyncHandler', () => {
         const any = { params: { value: 42 } } as any;
         expect(it.length).toEqual(3);
         expect(await it(any, any, any)).toEqual(any.params.value);
+    });
 
-    })
+    it('supports extended requests', async () => {
+        const controller = new MyController();
+        const it = boundAsyncHandler(controller, 'getCustom');
+        const any = { value: 42 } as any;
+        expect(it.length).toEqual(3);
+        expect(await it(any, any, any)).toEqual(any.value);
+    });
+    it('supports error handler', async () => {
+        const controller = new MyController();
+        const it = boundAsyncHandler(controller, 'onError');
+        const any = { } as any;
+        const error = new Error();
+        expect(it.length).toEqual(4);
+        expect(await it(error, any, any, any)).toEqual(error);
+    });
+
 });
