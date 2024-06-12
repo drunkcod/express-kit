@@ -1,6 +1,6 @@
 {
   "name": "@drunkcod/express-async",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "express helpers for async life.",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
