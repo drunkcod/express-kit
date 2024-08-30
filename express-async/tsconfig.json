@@ -5,12 +5,12 @@
       "target": "ES2022",
       "strict": true,
       "declaration": true,
-      "outDir": "dist",
-      "esModuleInterop": true
+      "outDir": "lib",
+      "esModuleInterop": true,
+      "baseUrl": "."
     },
     "exclude": [
       "node_modules",
-      "dist",
-      "**/*.spec.ts",
+      "lib"
     ]
   }

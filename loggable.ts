@@ -12,8 +12,11 @@ export function at(message?: string) {
 }
 
 export function asLoggableError(error: unknown) {
-	if (error instanceof Error) return { error, stack: error.stack };
-	const r: { stack?: string } = error ? typeof error !== 'object' ? { error } : error : { };
+	if (error instanceof Error) {
+		const { message, stack, ...rest } = error;
+		return { message, stack, ...rest };
+	}
+	const r = (error && typeof error === 'object') ? error : { message: error };
 	Error.captureStackTrace(r, asLoggableError);
-	return r;
+	return Object.defineProperty(r, 'stack', { enumerable: true });
 }

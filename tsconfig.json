@@ -2,16 +2,16 @@
     "compilerOptions": {
       "lib": ["ES2022"],
       "module": "commonjs",
-      "target": "ES2022",
+      "target": "es2022",
       "strict": true,
       "declaration": true,
-      "outDir": "dist",
-      "esModuleInterop": true
+      "outDir": "lib",
+      "esModuleInterop": true,
+      "baseUrl": "."
     },
     "exclude": [
-      "node_modules",
       "express-async",
-      "dist",
-      "**/*.spec.ts",
+      "lib",
+      "node_modules",
     ]
   }

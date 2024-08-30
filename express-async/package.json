@@ -1,11 +1,12 @@
 {
   "name": "@drunkcod/express-async",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "express helpers for async life.",
-  "main": "dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "lib/index.js",
+  "types": "./lib/index.d.ts",
   "files": [
-    "dist/**/*"
+    "lib/**/*",
+    "!lib/**/*.spec.*"
   ],
   "scripts": {
     "build": "tsc",
@@ -24,7 +25,7 @@
     "@types/node": "^20.14.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.4",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.4"
   },
   "peerDependencies": {
     "express": "^4.19.2"

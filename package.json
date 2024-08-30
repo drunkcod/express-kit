@@ -1,8 +1,12 @@
 {
   "name": "@drunkcod/express-kit",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Express4 utility things",
   "main": "index.js",
+  "files": [
+    "lib/**/*",
+    "!lib/**/*.spec.*"
+  ],
   "scripts": {
     "test": "jest",
     "build": "rimraf dist && tsc"
@@ -16,9 +20,12 @@
     "express-async"
   ],
   "devDependencies": {
+    "@drunkcod/argis": "^0.0.2",
     "@jest/globals": "^29.7.0",
+    "@types/node": "^22.5.1",
     "jest": "^29.7.0",
     "rimraf": "^5.0.7",
-    "ts-jest": "^29.1.4"
+    "ts-jest": "^29.1.4",
+    "typescript": "^5.5.4"
   }
 }
