@@ -1,3 +1,5 @@
+import { hasOwn } from "@drunkcod/argis";
+
 export function at(message?: string) {
 	const old = Error.stackTraceLimit;
 	try {
@@ -11,12 +13,26 @@ export function at(message?: string) {
 	}
 }
 
-export function asLoggableError(error: unknown) {
-	if (error instanceof Error) {
-		const { message, stack, ...rest } = error;
-		return { message, stack, ...rest };
+function asLoggableCause(cause: Error | object): object;
+function asLoggableCause(cause: unknown): unknown;
+function asLoggableCause(cause: unknown): unknown {
+	if(cause == null || typeof cause !== 'object') return cause;
+	if(cause instanceof Error) {
+		const { message, stack, cause: innerCause, ...rest } = cause;
+		return innerCause 
+		? { message, stack, cause: asLoggableCause(innerCause), ...rest }
+		: { message, stack, ...rest };
 	}
-	const r = (error && typeof error === 'object') ? error : { message: error };
+	if(hasOwn(cause, 'cause')) {
+		const { cause: innerCause, ...rest } = cause;
+		return { ...rest, cause: asLoggableCause(innerCause) };
+	}
+	return { ...cause };
+}
+
+export function asLoggableError(error: unknown) {
+	if (error instanceof Error) return asLoggableCause(error);
+	const r = (error && typeof error === 'object') ? asLoggableCause(error) : { message: error };
 	Error.captureStackTrace(r, asLoggableError);
 	return Object.defineProperty(r, 'stack', { enumerable: true });
 }
