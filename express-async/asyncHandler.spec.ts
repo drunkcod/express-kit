@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { asyncHandler, boundAsyncHandler } from './index'
+import { AsyncBinder, asyncHandler, boundAsyncHandler } from './index'
 import express from 'express';
 
 describe('asyncHandler', () => {
@@ -39,27 +39,27 @@ describe('asyncHandler', () => {
 
 });
 
-describe('boundAsyncHandler', () => {
-    class MyController {
-        value: object | number | undefined;
+class MyController {
+    value: object | number | undefined;
 
-        async getValue(req: express.Request, res: express.Response) {
-            return this.value;
-        }
-
-        async getT(req: express.Request<{value: number}>, res: express.Response, next: express.NextFunction) {
-            return req.params.value;
-        }
-
-        async getCustom(req: express.Request & {value: number}, res: express.Response, next: express.NextFunction) {
-            return req.value;
-        }
-
-        async onError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
-            return err;
-        }
+    async getValue(req: express.Request, res: express.Response) {
+        return this.value;
     }
 
+    async getT(req: express.Request<{value: number}>, res: express.Response, next: express.NextFunction) {
+        return req.params.value;
+    }
+
+    async getCustom(req: express.Request & {value: number}, res: express.Response, next: express.NextFunction) {
+        return req.value;
+    }
+
+    async onError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
+        return err;
+    }
+}
+
+describe('boundAsyncHandler', () => {
     it('binds to instance', async () => {
         const controller = new MyController();
         controller.value = 42;
@@ -84,6 +84,7 @@ describe('boundAsyncHandler', () => {
         expect(it.length).toEqual(3);
         expect(await it(any, any, any)).toEqual(any.value);
     });
+
     it('supports error handler', async () => {
         const controller = new MyController();
         const it = boundAsyncHandler(controller, 'onError');
@@ -93,4 +94,42 @@ describe('boundAsyncHandler', () => {
         expect(await it(error, any, any, any)).toEqual(error);
     });
 
+    interface CustomRequest extends express.Request {
+        customValue: any;
+    }
+
+    class CustomRequestController {
+        async getValue(req: CustomRequest, res: express.Response) {
+            return req.customValue;
+        }
+    }
+
+    it('supports custom request types', async () => {
+        const controller = new CustomRequestController();
+        const it = boundAsyncHandler(controller, 'getValue');
+        const any = { customValue: 'custom-value' } as any;
+        expect(it.length).toEqual(3);
+        expect(await it(any, any, any)).toEqual(any.customValue);
+    });    
+});
+
+describe('AsyncBinder', () => {
+    const controller = new MyController();
+    controller.value = 42;
+    const binder = new AsyncBinder(controller);
+
+    it('binds to instance', async () => {
+        const it = binder.bind('getValue');
+        const any = {} as any;
+        expect(it.length).toEqual(3);
+        expect(await it(any, any, any)).toEqual(controller.value);
+    });
+
+    it('supports error handler', async () => {
+        const it = binder.bind('onError');
+        const any = { } as any;
+        const error = new Error();
+        expect(it.length).toEqual(4);
+        expect(await it(error, any, any, any)).toEqual(error);
+    });
 });
