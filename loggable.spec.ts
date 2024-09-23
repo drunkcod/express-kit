@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@jest/globals'
 import { asLoggableError } from './loggable'
 import { assertOwn, hasOwn } from '@drunkcod/argis'
+import { onceAsync } from './index';
 
 const expectStack = (x: unknown) => {
     if(x == null || typeof x !== 'object') throw new Error('Expected object');
@@ -61,5 +62,15 @@ describe('asLoggableError', () => {
             inputHasStack: false,
             resultHasStack: true,
         });
+    });
+});
+
+describe('onceAsync', () => {
+    it('invokes target only once', async () => {
+        let n = 0;
+        const fn = onceAsync(async () => (++n));
+
+        const [first, second] = await Promise.all([fn(), fn()]);
+        expect({ first, second }).toMatchObject({ first: 1, second: 1 });
     });
 });
