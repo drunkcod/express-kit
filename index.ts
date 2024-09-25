@@ -2,7 +2,9 @@ import type express from 'express'
 export * from '@drunkcod/express-async'
 export * from './loggable'
 
-export function onceAsync<T>(fn: () => Promise<T>): () => Promise<T> {
+type AsyncFn<T> = () => Promise<T>;
+
+export function onceAsync<T>(fn: AsyncFn<T>): AsyncFn<T> {
     let p: Promise<T>;
     return () => {
         if(p) return p;
@@ -10,6 +12,18 @@ export function onceAsync<T>(fn: () => Promise<T>): () => Promise<T> {
         fn = () => p;
         return p;
     }
+}
+
+export function mergeCallsAsync<T>(fn: AsyncFn<T>): AsyncFn<T> {
+    let p: Promise<T> | null;
+    return async () => {
+        if(!p) p = fn();
+        try {
+            return await p;
+        } finally {
+            p = null;
+        }
+    };
 }
 
 type ExpressServer = ReturnType<express.Application['listen']>;
