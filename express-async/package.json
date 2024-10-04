@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "compile": "tsc",
-    "build": "npm-run-all clean compile",
+    "build": "npm-run-all clean compile --silent",
     "test": "jest"
   },
   "keywords": [

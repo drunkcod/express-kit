@@ -13,7 +13,7 @@
     "clean": "rimraf lib",
     "compile": "tsc",
     "test": "jest",
-    "build": "npm-run-all clean compile"
+    "build": "npm-run-all clean compile --silent"
   },
   "keywords": [
     "express"
