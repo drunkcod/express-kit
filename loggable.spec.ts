@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals'
-import { asLoggableError } from './loggable'
-import { assertNotNil, assertOwn, hasOwn } from '@drunkcod/argis'
-import { mergeCallsAsync, onceAsync } from './index';
+import { asLoggableError } from './loggable.js'
+import { assertOwn, hasOwn } from '@drunkcod/argis'
+import { mergeCallsAsync, onceAsync } from './index.js';
 
 const expectStack = (x: unknown) => {
     if(x == null || typeof x !== 'object') throw new Error('Expected object');

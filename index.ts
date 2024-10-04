@@ -1,6 +1,6 @@
 import type express from 'express'
 export * from '@drunkcod/express-async'
-export * from './loggable'
+export * from './loggable.js'
 
 type AsyncFn<T> = () => Promise<T>;
 
