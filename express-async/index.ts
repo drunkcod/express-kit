@@ -27,12 +27,14 @@ type ControllerErrorFns<C> = IsEmptyObject<HandlerErrorFns<C>> extends true ? ne
 
 type ControllerFns<C> = ControllerHandlerFns<C> | ControllerErrorFns<C>
 
-const rejected = <T>(cause: any) => new Promise<T>((_, reject) => reject(cause));
-const safeResolve = <T>(fn: (...args: any[]) => Promise<T>, ...args: any[]) => {
+type Unwrap<T> = T extends Promise<infer U> ? U : T; 
+
+const safeResolve = <Fn extends (...args: any) => any>(fn: Fn, ...args: Parameters<Fn>) => {
+    type ReturnT = Unwrap<ReturnType<Fn>>
     try {
-        return Promise.resolve(fn(...args))
-    } catch(err) {
-        return rejected(err);
+        return Promise.resolve<ReturnT>(fn(...args))
+    } catch(reason) {
+        return Promise.reject<ReturnT>(reason);
     }
 }
 
