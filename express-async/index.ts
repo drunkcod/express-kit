@@ -1,4 +1,4 @@
-import express from 'express'
+import type express from 'express'
 
 type WithReturn<Type extends (...args: any) => any, R> = Type extends (...args: infer Args) => any ? (...args: Args) => R : never;
 type IsEmptyObject<T extends Record<PropertyKey, unknown>> = [keyof T] extends [never] ? true : false;
@@ -9,13 +9,15 @@ type RequestHandler<T, Req extends express.Request<any> = express.Request<any>> 
 
 type RequestParams = 
       [express.Request<any>, express.Response] 
-    | [express.Request<any>, express.Response, express.NextFunction]
+    | [express.Request<any>, express.Response, express.NextFunction];
+
+type ErrorParams = [Error, express.Request<any>, express.Response, express.NextFunction];
 
 type IsRequestHandler<T, P extends keyof T> = 
-    T[P] extends (...args:any[]) => any ? Parameters<T[P]> extends RequestParams ? P : never : never;
+    T[P] extends (...args:any) => any ? Parameters<T[P]> extends RequestParams ? P : never : never;
 
 type IsErrorHandler<T, P extends keyof T> =
-    T[P] extends (...args:any[]) => any ? Parameters<T[P]> extends [Error, express.Request<any>, express.Response, express.NextFunction] ? P : never : never
+    T[P] extends (...args:any) => any ? Parameters<T[P]> extends ErrorParams ? P : never : never
 
 type ErrorHandler<T> = WithReturn<express.ErrorRequestHandler, Promise<T>>;
 
@@ -38,9 +40,18 @@ const safeResolve = <Fn extends (...args: any) => any>(fn: Fn, ...args: Paramete
     }
 }
 
-export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: (req: Req, res: express.Response) => Promise<T>) :  RequestHandler<T> 
-export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: (req: Req, res: express.Response, next: express.NextFunction) => Promise<T>):  RequestHandler<T>
-export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: (error: Error, req: Req, res: express.Response, next: express.NextFunction) => Promise<T>) : ErrorHandler<T>
+type HandlerFn<Req, T>  = 
+    Req extends [never] ? never :
+    ((...args: [request: Req, response: express.Response]) => Promise<T>) 
+    | ((...args: [request: Req, response: express.Response, next: express.NextFunction]) => Promise<T>)
+
+type ErrorHandlerFn<Req, T>  = 
+    Req extends [never] ? never :
+    ((...args: [errpr: Error, request: Req, response: express.Response, next: express.NextFunction]) => Promise<T>) 
+
+
+export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: HandlerFn<Req, T>) :  RequestHandler<T> 
+export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: ErrorHandlerFn<Req, T>) : ErrorHandler<T>
 export function asyncHandler<T>(fn: (...args:any[]) => Promise<T>): RequestHandler<any> | ErrorHandler<any> {
     switch(fn.length) {
         case 2:
@@ -56,12 +67,13 @@ export function asyncHandler<T>(fn: (...args:any[]) => Promise<T>): RequestHandl
     }
 }
 
-const getFn = <C extends ControllerFns<C>, T>(x: C, m: keyof ControllerFns<C>): ((...args: any[]) => Promise<T>) => x[m];
+type Fn = (...args: RequestParams | ErrorParams) => any;
 
 export function boundAsyncHandler<C extends ControllerHandlerFns<C>, T>(x: C, m: keyof ControllerHandlerFns<C>): RequestHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerErrorFns<C>, T>(x: C, m: keyof ControllerErrorFns<C>): ErrorHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerFns<C>>(x: C, m: keyof ControllerFns<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
-    return asyncHandler(getFn(x, m).bind(x));
+    const fn: Fn = x[m];
+    return asyncHandler(fn.bind(x));
 }
 
 export class AsyncBinder<Controller extends ControllerFns<Controller>> {
@@ -71,6 +83,7 @@ export class AsyncBinder<Controller extends ControllerFns<Controller>> {
     bind<T>(m: keyof ControllerErrorFns<Controller>): ErrorHandler<unknown>;
     bind(m: keyof ControllerFns<Controller>): RequestHandler<unknown> | ErrorHandler<unknown> {
         const x = this.controller;
-        return asyncHandler(getFn(x, m).bind(x));
+        const fn: Fn = x[m];
+        return asyncHandler(fn.bind(x));
     }
 }
