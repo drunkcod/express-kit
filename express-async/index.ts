@@ -49,10 +49,11 @@ type ErrorHandlerFn<Req, T>  =
     Req extends [never] ? never :
     ((...args: [errpr: Error, request: Req, response: express.Response, next: express.NextFunction]) => Promise<T>) 
 
+export const as = <T>(x: T) => x;
 
 export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: HandlerFn<Req, T>) :  RequestHandler<T> 
 export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: ErrorHandlerFn<Req, T>) : ErrorHandler<T>
-export function asyncHandler<T>(fn: (...args:any[]) => Promise<T>): RequestHandler<any> | ErrorHandler<any> {
+export function asyncHandler<T>(fn: (...args:any) => Promise<T>): RequestHandler<any> | ErrorHandler<any> {
     switch(fn.length) {
         case 2:
         case 3: return (req: express.Request, res: express.Response, next: express.NextFunction) => safeResolve(fn, req, res, next).catch(next);
@@ -70,8 +71,7 @@ export function asyncHandler<T>(fn: (...args:any[]) => Promise<T>): RequestHandl
 export function boundAsyncHandler<C extends ControllerHandlerFns<C>, T>(x: C, m: keyof ControllerHandlerFns<C>): RequestHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerErrorFns<C>, T>(x: C, m: keyof ControllerErrorFns<C>): ErrorHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerFns<C>>(x: C, m: keyof ControllerFns<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
-    const fn: Function = x[m];
-    return asyncHandler(fn.bind(x));
+    return asyncHandler(as<Function>(x[m]).bind(x));
 }
 
 export class AsyncBinder<Controller extends ControllerFns<Controller>> {
@@ -81,7 +81,6 @@ export class AsyncBinder<Controller extends ControllerFns<Controller>> {
     bind<T>(m: keyof ControllerErrorFns<Controller>): ErrorHandler<unknown>;
     bind(m: keyof ControllerFns<Controller>): RequestHandler<unknown> | ErrorHandler<unknown> {
         const x = this.controller;
-        const fn: Function = x[m];
-        return asyncHandler(fn.bind(x));
+        return asyncHandler(as<Function>(x[m]).bind(x));
     }
 }

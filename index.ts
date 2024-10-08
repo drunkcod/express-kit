@@ -3,6 +3,9 @@ export * from '@drunkcod/express-async'
 export * from './loggable.js'
 
 type AsyncFn<T> = () => Promise<T>;
+type ExpressServer = ReturnType<express.Application['listen']>;
+
+export type ErrorHandler = (error: Error, request: express.Request, response: express.Response, next: express.NextFunction) => void;
 
 export function onceAsync<T>(fn: AsyncFn<T>): AsyncFn<T> {
     let p: Promise<T>;
@@ -25,8 +28,6 @@ export function mergeCallsAsync<T>(fn: AsyncFn<T>): AsyncFn<T> {
         }
     };
 }
-
-type ExpressServer = ReturnType<express.Application['listen']>;
 
 const closeAsync = (server: ExpressServer) => (new Promise<void>((resolve, reject) => {
     server.close((err) => {
