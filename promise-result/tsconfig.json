@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "allowJs": true,
+      "lib": ["ES2022"],
+      "module": "Node16",
+      "target": "ES2022",
+      "strict": true,
+      "declaration": true,
+      "outDir": "lib",
+      "esModuleInterop": true,
+      "baseUrl": "."
+    },
+    "exclude": [
+      "node_modules",
+      "lib",
+      "jest.config.*"
+    ]
+  }

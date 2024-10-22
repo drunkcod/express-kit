@@ -29,12 +29,33 @@ export function mergeCallsAsync<T>(fn: AsyncFn<T>): AsyncFn<T> {
     };
 }
 
-const closeAsync = (server: ExpressServer) => (new Promise<void>((resolve, reject) => {
-    server.close((err) => {
-        if(err) reject(err);
-        else resolve();
+interface Listener<T> {
+    listen(cb: () => void): T;
+    listen(port: number, cb:() => void): T
+}
+
+export function listenAsync<T>(server: Listener<T>, options?: { port?: number}) {
+    return new Promise<T>((resolve, reject) => {
+        try {
+            if(options?.port) {
+                const r = server.listen(options.port, () => resolve(r));
+            } else {
+                const r = server.listen(() => resolve(r));
+            }
+        } catch(err) {
+            reject(err);
+        }
     })
-}));
+}
+
+export function closeAsync(server: { close: (cb: (error?: Error) => void) => void }) {
+    return new Promise<void>((resolve, reject) => {
+        server.close((err) => {
+            if(err) reject(err);
+            else resolve();
+        });
+    });
+}
 
 export function registerShutdown<Server extends ExpressServer = ExpressServer>(
     server: Server, 

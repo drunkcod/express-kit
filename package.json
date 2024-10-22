@@ -21,7 +21,8 @@
   "author": "Tobbe Gyllebring <tobbe@drunkcod.com>",
   "license": "MIT",
   "workspaces": [
-    "express-async"
+    "express-async",
+    "promise-result"
   ],
   "dependencies": {
     "@drunkcod/express-async": "^0.0.7"

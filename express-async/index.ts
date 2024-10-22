@@ -75,6 +75,12 @@ export function boundAsyncHandler<C extends ControllerFns<C>>(x: C, m: keyof Con
 }
 
 export class AsyncBinder<Controller extends ControllerFns<Controller>> {
+
+    static for<Controller extends ControllerFns<Controller>>(controller: Controller) {
+        const self = new AsyncBinder(controller);
+        return self.bind.bind(self);
+    }
+
     constructor(private controller: Controller) {}
 
     bind<T>(m: keyof ControllerHandlerFns<Controller>): RequestHandler<unknown>;
