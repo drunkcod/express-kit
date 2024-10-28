@@ -83,8 +83,8 @@ export class AsyncBinder<Controller extends ControllerFns<Controller>> {
 
     constructor(private controller: Controller) {}
 
-    bind<T>(m: keyof ControllerHandlerFns<Controller>): RequestHandler<unknown>;
-    bind<T>(m: keyof ControllerErrorFns<Controller>): ErrorHandler<unknown>;
+    bind(m: keyof ControllerHandlerFns<Controller>): RequestHandler<unknown>;
+    bind(m: keyof ControllerErrorFns<Controller>): ErrorHandler<unknown>;
     bind(m: keyof ControllerFns<Controller>): RequestHandler<unknown> | ErrorHandler<unknown> {
         const x = this.controller;
         return asyncHandler(as<Function>(x[m]).bind(x));
