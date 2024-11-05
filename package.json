@@ -1,7 +1,7 @@
 {
   "name": "@drunkcod/express-kit",
   "type": "module",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Express4 utility things",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -26,7 +26,7 @@
   ],
   "dependencies": {
     "@drunkcod/argis": "^0.0.5",
-    "@drunkcod/express-async": "^0.0.10"
+    "@drunkcod/express-async": "^0.0.11"
   },
   "devDependencies": {
     "@drunkcod/ts-jest-esm": "^0.0.1",
