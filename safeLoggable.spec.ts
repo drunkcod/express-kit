@@ -1,5 +1,5 @@
-import { describe, it, test, expect } from '@jest/globals'
-import { hasOwnJSON } from 'loggable.js';
+import { describe, test, expect } from '@jest/globals'
+import { hasOwnJSON } from './loggable.js';
 
 const makeSafe = (value: unknown): unknown => {
     if(value == null || typeof value !== 'object') return value;
