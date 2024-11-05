@@ -49,7 +49,13 @@ type ErrorHandlerFn<Req, T>  =
     Req extends [never] ? never :
     ((...args: [errpr: Error, request: Req, response: express.Response, next: express.NextFunction]) => Promise<T>) 
 
+type IsFn<T, P extends keyof T> = T[P] extends (...args:any) => any ? P : never;
+type Fns<T> = { [P in keyof T as IsFn<T, P>]: T[P] };
+
 export const as = <T>(x: T) => x;
+export function bind<T extends Fns<T>, K extends keyof T>(target: T, fn: K): T[K] {
+    return as<Function>(target[fn]).bind(target);
+}
 
 export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: HandlerFn<Req, T>) :  RequestHandler<T> 
 export function asyncHandler<T, Req extends express.Request = express.Request<any>>(fn: ErrorHandlerFn<Req, T>) : ErrorHandler<T>

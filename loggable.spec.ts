@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals'
+import { describe, it, test, expect } from '@jest/globals'
 import { asLoggableError } from './loggable.js'
 import { assertOwn, hasOwn } from '@drunkcod/argis'
 
@@ -47,6 +47,13 @@ describe('asLoggableError', () => {
         const error = asLoggableError({ cause: "it went wrong" });
         assertOwn(error, 'cause');
         expect(error.cause).toEqual('it went wrong');
+    });
+
+    it('calls toJSON if available', () => {
+        const error = asLoggableError({ toJSON() { return { message: 'hello json world'}}});
+        expect(error).toMatchObject({
+            message: 'hello json world'
+        });
     });
 
     it('doesn\´t modify input', () => {

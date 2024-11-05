@@ -17,6 +17,7 @@ function asLoggableCause(cause: Error | object): object;
 function asLoggableCause(cause: unknown): unknown;
 function asLoggableCause(cause: unknown): unknown {
 	if(cause == null || typeof cause !== 'object') return cause;
+	if(hasOwnJSON(cause)) return asLoggableCause(cause.toJSON());
 	if(cause instanceof Error) {
 		const { message, stack, cause: innerCause, ...rest } = cause;
 		return innerCause 
@@ -35,4 +36,8 @@ export function asLoggableError(error: unknown) {
 	const r = (error && typeof error === 'object') ? asLoggableCause(error) : { message: error };
 	Error.captureStackTrace(r, asLoggableError);
 	return Object.defineProperty(r, 'stack', { enumerable: true });
+}
+
+export function hasOwnJSON(x: object) : x is { toJSON(): unknown } { 
+	return 'toJSON' in x && typeof x.toJSON === 'function';
 }
