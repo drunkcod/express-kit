@@ -9,12 +9,27 @@
     "lib/**/*",
     "!lib/**/*.spec.*"
   ],
+  "exports": {
+    ".": {
+      "import": {
+        "default": "./lib/index.js",
+        "types": "./lib/index.d.ts"
+      },
+      "require": {
+        "default": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts"
+      }
+    }
+  },
   "scripts": {
     "clean": "rimraf lib",
     "compile": "tsc",
+    "cjs:compile": "tsc --module commonjs --outdir lib/cjs",
+    "cjs:fixup": "echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
+
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest",
     "test:all": "npm-run-all \"test --workspaces --include-workspace-root\" --silent",
-    "build": "npm-run-all clean compile --silent"
+    "build": "npm-run-all clean -p compile cjs:compile -s cjs:fixup --silent"
   },
   "keywords": [
     "express"
