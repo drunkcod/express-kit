@@ -1,6 +1,7 @@
 import type express from 'express'
 export * from '@drunkcod/express-async'
 export * from './loggable.js'
+export * from './stopwatch.js'
 
 type AsyncFn<T> = () => Promise<T>;
 type ExpressServer = ReturnType<express.Application['listen']>;
