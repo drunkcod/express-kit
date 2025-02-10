@@ -1,7 +1,7 @@
 {
   "name": "@drunkcod/express-kit",
   "type": "module",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Express4 utility things",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

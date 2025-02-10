@@ -1,4 +1,4 @@
-import { hasOwn, hasKey } from '@drunkcod/argis';
+import { hasOwn } from '@drunkcod/argis';
 
 export function at(message?: string) {
 	const old = Error.stackTraceLimit;
