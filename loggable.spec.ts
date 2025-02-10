@@ -37,7 +37,7 @@ describe('asLoggableError', () => {
 		expectStack(error.cause);
 	});
 
-	it('makes any cause loggable', () => {
+	it('makes error cause loggable', () => {
 		const error = asLoggableError({ cause: new Error('The Cause') });
 		assertOwn(error, 'cause');
 		expectStack(error.cause);
@@ -46,7 +46,20 @@ describe('asLoggableError', () => {
 	it('makes any cause loggable', () => {
 		const error = asLoggableError({ cause: 'it went wrong' });
 		assertOwn(error, 'cause');
-		expect(error.cause).toEqual('it went wrong');
+		expect(error.cause).toEqual({ message: 'it went wrong' });
+	});
+
+	it('lifts message from cause if missing in parent', () => {
+		const cause = new Error('What caused this?');
+		const error = asLoggableError({ cause });
+		assertOwn(error, 'message');
+		expect(error.message).toEqual(cause.message);
+	});
+
+	it('lifts message from cause if missing in parent', () => {
+		const error = asLoggableError({ cause: 42 });
+		assertOwn(error, 'message');
+		expect(error.message).toEqual(42);
 	});
 
 	it('calls toJSON if available', () => {

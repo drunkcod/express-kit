@@ -13,20 +13,28 @@ export function at(message?: string) {
 	}
 }
 
-function asLoggableCause(cause: Error | object): object;
-function asLoggableCause(cause: unknown): unknown;
-function asLoggableCause(cause: unknown): unknown {
-	if (cause == null || typeof cause !== 'object') return cause;
+type LoggableCause = { message: unknown; cause?: unknown; stack?: string };
+
+function asLoggableCause(cause: null): null;
+function asLoggableCause(cause: unknown): LoggableCause;
+function asLoggableCause(cause: unknown): null | LoggableCause {
+	if (cause == null) return null;
+	if (typeof cause !== 'object') return { message: cause };
 	if (hasOwnJSON(cause)) return asLoggableCause(cause.toJSON());
 	if (cause instanceof Error) {
 		const { message, stack, cause: innerCause, ...rest } = cause;
-		return innerCause ? { message, stack, cause: asLoggableCause(innerCause), ...rest } : { message, stack, ...rest };
+		if (innerCause) {
+			const loggableInner = asLoggableCause(innerCause);
+			return { message: message ?? cause.message, cause: loggableInner, stack, ...rest };
+		}
+		return { message, stack, ...rest };
 	}
 	if (hasOwn(cause, 'cause')) {
 		const { cause: innerCause, ...rest } = cause;
-		return { ...rest, cause: asLoggableCause(innerCause) };
+		const loggableInner = asLoggableCause(innerCause);
+		return { message: hasOwn(cause, 'message') ? cause.message : loggableInner.message, cause: loggableInner, ...rest };
 	}
-	return { ...cause };
+	return { message: cause.toString(), ...cause };
 }
 
 export function asLoggableError(error: unknown) {
