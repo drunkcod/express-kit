@@ -27,7 +27,7 @@ describe('asLoggableError', () => {
 	});
 
 	it('exposes stack from Error', () => {
-		const error = asLoggableError(new Error('The Error.'));
+		const error = asLoggableError(new Error('stack from Error'));
 		expectStack(error);
 	});
 
@@ -60,6 +60,11 @@ describe('asLoggableError', () => {
 		const error = asLoggableError({ cause: 42 });
 		assertOwn(error, 'message');
 		expect(error.message).toEqual(42);
+	});
+	it('lifts message from cause if missing in parent', () => {
+		const error = asLoggableError({ message: null, cause: { message: 'cause' } });
+		assertOwn(error, 'message');
+		expect(error.message).toEqual('cause');
 	});
 
 	it('calls toJSON if available', () => {

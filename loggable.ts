@@ -1,4 +1,4 @@
-import { hasOwn } from '@drunkcod/argis';
+import { hasOwn, hasKey } from '@drunkcod/argis';
 
 export function at(message?: string) {
 	const old = Error.stackTraceLimit;
@@ -21,18 +21,16 @@ function asLoggableCause(cause: unknown): null | LoggableCause {
 	if (cause == null) return null;
 	if (typeof cause !== 'object') return { message: cause };
 	if (hasOwnJSON(cause)) return asLoggableCause(cause.toJSON());
-	if (cause instanceof Error) {
-		const { message, stack, cause: innerCause, ...rest } = cause;
+	if (cause instanceof Error || hasOwn(cause, 'cause')) {
+		const { message, stack, cause: innerCause, ...rest } = cause as any;
+		const r: { message: unknown; cause?: unknown; stack?: string } = { message, ...rest };
 		if (innerCause) {
 			const loggableInner = asLoggableCause(innerCause);
-			return { message: message ?? cause.message, cause: loggableInner, stack, ...rest };
+			r.cause = loggableInner;
+			r.message ??= loggableInner.message;
 		}
-		return { message, stack, ...rest };
-	}
-	if (hasOwn(cause, 'cause')) {
-		const { cause: innerCause, ...rest } = cause;
-		const loggableInner = asLoggableCause(innerCause);
-		return { message: hasOwn(cause, 'message') ? cause.message : loggableInner.message, cause: loggableInner, ...rest };
+		if (stack) r.stack = stack;
+		return r;
 	}
 	return { message: cause.toString(), ...cause };
 }

@@ -39,7 +39,7 @@
     "express-async"
   ],
   "dependencies": {
-    "@drunkcod/argis": "^0.0.7",
+    "@drunkcod/argis": "^0.0.11",
     "@drunkcod/express-async": "^0.0.13"
   },
   "devDependencies": {
