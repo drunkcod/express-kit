@@ -13,6 +13,14 @@ export function at(message?: string) {
 	}
 }
 
+function loggableStack(message: string | undefined, stopAt: Function) {
+	const s: { stack?: string } = {};
+	Error.captureStackTrace(s, asLoggableError);
+	if (message) message = `: ${message}`;
+	else message = '';
+	return `LoggableError${message}\n` + s.stack?.substring(6);
+}
+
 type LoggableCause = { message: unknown; cause?: unknown; stack?: string };
 
 function asLoggableCause(cause: null): null;
@@ -23,23 +31,22 @@ function asLoggableCause(cause: unknown): null | LoggableCause {
 	if (hasOwnJSON(cause)) return asLoggableCause(cause.toJSON());
 	if (cause instanceof Error || hasOwn(cause, 'cause')) {
 		const { message, stack, cause: innerCause, ...rest } = cause as any;
-		const r: { message: unknown; cause?: unknown; stack?: string } = { message, ...rest };
+		const r: { message: unknown; stack?: string; cause?: unknown } = { message };
 		if (innerCause) {
 			const loggableInner = asLoggableCause(innerCause);
 			r.cause = loggableInner;
 			r.message ??= loggableInner.message;
 		}
 		if (stack) r.stack = stack;
-		return r;
+		return Object.assign(r, rest);
 	}
 	return { message: cause.toString(), ...cause };
 }
 
 export function asLoggableError(error: unknown) {
 	if (error instanceof Error) return asLoggableCause(error);
-	const r = error && typeof error === 'object' ? asLoggableCause(error) : { message: error };
-	Error.captureStackTrace(r, asLoggableError);
-	return Object.defineProperty(r, 'stack', { enumerable: true });
+	const { message, ...rest } = error && typeof error === 'object' ? asLoggableCause(error) : { message: error };
+	return { message, stack: loggableStack(message?.toString(), asLoggableError), ...rest };
 }
 
 export function hasOwnJSON(x: object): x is { toJSON(): unknown } {
