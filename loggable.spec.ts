@@ -71,6 +71,7 @@ describe('asLoggableError', () => {
 	it('avoids [object Object] for plain object message', () => {
 		const error = asLoggableError({ value: 42 });
 		expect(error.message).toEqual('');
+		expect(error.stack).toMatch(/^LoggableError\n/);
 	});
 
 	it('calls toJSON if available', () => {
