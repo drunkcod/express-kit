@@ -15,7 +15,7 @@ export function at(message?: string) {
 
 function loggableStack(message: string | undefined, stopAt: Function) {
 	const s: { stack?: string } = {};
-	Error.captureStackTrace(s, asLoggableError);
+	Error.captureStackTrace(s, stopAt);
 	if (message) message = `: ${message}`;
 	else message = '';
 	return `LoggableError${message}\n` + s.stack?.substring(6);
@@ -40,7 +40,7 @@ function asLoggableCause(cause: unknown): null | LoggableCause {
 		if (stack) r.stack = stack;
 		return Object.assign(r, rest);
 	}
-	return { message: cause.toString(), ...cause };
+	return { message: '', ...cause };
 }
 
 export function asLoggableError(error: unknown) {

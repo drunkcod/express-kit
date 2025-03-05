@@ -61,10 +61,16 @@ describe('asLoggableError', () => {
 		assertOwn(error, 'message');
 		expect(error.message).toEqual(42);
 	});
+
 	it('lifts message from cause if missing in parent', () => {
 		const error = asLoggableError({ message: null, cause: { message: 'cause' } });
 		assertOwn(error, 'message');
 		expect(error.message).toEqual('cause');
+	});
+
+	it('avoids [object Object] for plain object message', () => {
+		const error = asLoggableError({ value: 42 });
+		expect(error.message).toEqual('');
 	});
 
 	it('calls toJSON if available', () => {
