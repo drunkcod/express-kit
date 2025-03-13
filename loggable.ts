@@ -21,7 +21,7 @@ function loggableStack(message: string | undefined, stopAt: Function) {
 	return `LoggableError${message}\n` + s.stack?.substring(6);
 }
 
-type LoggableCause = { message: unknown; cause?: unknown; stack?: string };
+type LoggableCause = { message?: unknown; cause?: unknown; stack?: string };
 
 function asLoggableCause(cause: null): null;
 function asLoggableCause(cause: unknown): LoggableCause;
@@ -40,7 +40,7 @@ function asLoggableCause(cause: unknown): null | LoggableCause {
 		if (stack) r.stack = stack;
 		return Object.assign(r, rest);
 	}
-	return { message: '', ...cause };
+	return cause;
 }
 
 export function asLoggableError(error: unknown) {

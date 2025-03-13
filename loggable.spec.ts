@@ -68,9 +68,14 @@ describe('asLoggableError', () => {
 		expect(error.message).toEqual('cause');
 	});
 
+	it('cause message on object', () => {
+		const error = asLoggableError(new Error('error message', { cause: { foo: 'the cause' } }));
+		expect((error.cause as any).message).toBeUndefined();
+	});
+
 	it('avoids [object Object] for plain object message', () => {
 		const error = asLoggableError({ value: 42 });
-		expect(error.message).toEqual('');
+		expect(error.message).toBeUndefined();
 		expect(error.stack).toMatch(/^LoggableError\n/);
 	});
 
