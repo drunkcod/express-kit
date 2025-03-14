@@ -72,7 +72,7 @@ export function asyncHandler<T>(fn: (...args: any) => Promise<T>): RequestHandle
 export function boundAsyncHandler<C extends ControllerHandlerFns<C>, T>(x: C, m: keyof ControllerHandlerFns<C>): RequestHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerErrorFns<C>, T>(x: C, m: keyof ControllerErrorFns<C>): ErrorHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerFns<C>>(x: C, m: keyof ControllerFns<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
-	return asyncHandler(as<Function>(x[m]).bind(x));
+	return asyncHandler(bind(x, m));
 }
 
 export class AsyncBinder<Controller extends ControllerFns<Controller>> {
@@ -86,7 +86,6 @@ export class AsyncBinder<Controller extends ControllerFns<Controller>> {
 	bind(m: keyof ControllerHandlerFns<Controller>): RequestHandler<unknown>;
 	bind(m: keyof ControllerErrorFns<Controller>): ErrorHandler<unknown>;
 	bind(m: keyof ControllerFns<Controller>): RequestHandler<unknown> | ErrorHandler<unknown> {
-		const x = this.controller;
-		return asyncHandler(as<Function>(x[m]).bind(x));
+		return asyncHandler(bind(this.controller, m));
 	}
 }
