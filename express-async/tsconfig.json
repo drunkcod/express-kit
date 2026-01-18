@@ -1,4 +1,8 @@
 {
   "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./lib"
+  },
   "exclude": ["node_modules", "lib", "jest.config.*", "**/*.spec.ts"]
 }

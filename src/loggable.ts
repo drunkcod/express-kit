@@ -23,17 +23,20 @@ function loggableStack(message: string | undefined, stopAt: Function) {
 
 type LoggableCause = { message?: unknown; cause?: unknown; stack?: string };
 
-function asLoggableCause(cause: null): null;
-function asLoggableCause(cause: unknown): LoggableCause;
-function asLoggableCause(cause: unknown): null | LoggableCause {
+function asLoggableCause(cause: null, seen?: WeakSet<object>): null;
+function asLoggableCause(cause: unknown, seen?: WeakSet<object>): LoggableCause;
+function asLoggableCause(cause: unknown, seen = new WeakSet<object>()): null | LoggableCause {
 	if (cause == null) return null;
 	if (typeof cause !== 'object') return { message: cause };
-	if (hasOwnJSON(cause)) return asLoggableCause(cause.toJSON());
+	if (seen.has(cause)) return { message: '[Circular Reference]' };
+	seen.add(cause);
+
+	if (hasOwnJSON(cause)) return asLoggableCause(cause.toJSON(), seen);
 	if (cause instanceof Error || hasOwn(cause, 'cause')) {
 		const { message, stack, cause: innerCause, ...rest } = cause as any;
 		const r: { message: unknown; stack?: string; cause?: unknown } = { message };
 		if (innerCause) {
-			const loggableInner = asLoggableCause(innerCause);
+			const loggableInner = asLoggableCause(innerCause, seen);
 			r.cause = loggableInner;
 			r.message ??= loggableInner.message;
 		}

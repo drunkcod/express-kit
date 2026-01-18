@@ -10,9 +10,8 @@ type ExpressServer = ReturnType<express.Application['listen']>;
 
 export type ErrorHandler = (error: Error, request: express.Request, response: express.Response, next: express.NextFunction) => void;
 
-export type WithReqBody<T, ReqBody> = T extends express.Request<infer P, infer ResBody, unknown, infer Query, infer Locals>
-	? express.Request<P, ResBody, ReqBody, Query, Locals>
-	: never;
+export type WithReqBody<T, ReqBody> =
+	T extends express.Request<infer P, infer ResBody, unknown, infer Query, infer Locals> ? express.Request<P, ResBody, ReqBody, Query, Locals> : never;
 
 export function onceAsync<T>(fn: AsyncFn<T>): AsyncFn<T> {
 	let p: Promise<T>;
@@ -59,7 +58,7 @@ export const closeAsync = (server: { close: (cb: (error?: Error) => void) => voi
 		server.close((err) => {
 			if (err) reject(err);
 			else resolve();
-		})
+		}),
 	);
 
 export function registerShutdown<Server extends ExpressServer = ExpressServer>(server: Server, shutdown?: () => Promise<unknown>) {
