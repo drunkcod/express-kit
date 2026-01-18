@@ -37,7 +37,7 @@
   "author": "Tobbe Gyllebring <tobbe@drunkcod.com>",
   "license": "MIT",
   "workspaces": [
-    "express-async"
+    "packages/*"
   ],
   "dependencies": {
     "@drunkcod/argis": "^0.0.13",

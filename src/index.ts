@@ -1,7 +1,7 @@
 import type express from 'express';
 
 import { Stopwatch, Timespan } from './stopwatch.js';
-export * from '@drunkcod/express-async';
+export * from 'packages/express-async/lib/index.js';
 export * from './loggable.js';
 export * from './stopwatch.js';
 
