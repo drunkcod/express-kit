@@ -1,5 +1,5 @@
 import { describe, it, test, expect } from '@jest/globals';
-import { AsyncBinder, asyncHandler, boundAsyncHandler } from './index.js';
+import { AsyncBinder, asyncHandler, boundAsyncHandler, ControllerBinder, controllerHandler } from './index.js';
 import express from 'express';
 
 describe('asyncHandler', () => {
@@ -47,6 +47,10 @@ describe('asyncHandler', () => {
 class MyController {
 	value: object | number | undefined;
 
+	constructor(value?: object | number) {
+		this.value = value;
+	}
+
 	async getValue(req: express.Request, res: express.Response) {
 		return this.value;
 	}
@@ -61,6 +65,10 @@ class MyController {
 
 	async onError(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
 		return err;
+	}
+
+	async getSelf(req: express.Request, res: express.Response) {
+		return this;
 	}
 }
 
@@ -132,6 +140,64 @@ describe('AsyncBinder', () => {
 
 	it('supports error handler', async () => {
 		const it = binder.bind('onError');
+		const any = {} as any;
+		const error = new Error();
+		expect(it.length).toEqual(4);
+		expect(await it(error, any, any, any)).toEqual(error);
+	});
+});
+
+describe('controllerHandler', () => {
+	it('uses factory per request', async () => {
+		let created = 0;
+		const it = controllerHandler(() => new MyController(++created), MyController.prototype.getSelf);
+		const any = {} as any;
+		expect(it.length).toEqual(3);
+		const first = await it(any, any, any);
+		const second = await it(any, any, any);
+		expect(created).toEqual(2);
+		expect(first).not.toBe(second);
+	});
+
+	it('factory receives request and response', async () => {
+		let args;
+		const it = controllerHandler((req, res) => {
+			args = [req, res];
+			return new MyController();
+		}, MyController.prototype.getSelf);
+		const req = { id: 'req' } as any;
+		const res = { id: 'res' } as any;
+		const any = {} as any;
+		await it(req, res, any);
+		expect(args).toEqual([req, res]);
+	});
+
+	it('with next', async () => {
+		let created = 0;
+		const it = controllerHandler(() => new MyController(++created), MyController.prototype.getT);
+		expect(it.length).toEqual(3);
+	});
+
+	it('error handler', async () => {
+		let created = 0;
+		const it = controllerHandler(() => new MyController(++created), MyController.prototype.onError);
+		expect(it.length).toEqual(4);
+	});
+});
+
+describe('ControllerBinder', () => {
+	const controller = new MyController();
+	const binder = new ControllerBinder(() => controller);
+
+	it('binds to instance', async () => {
+		const it = binder.bind(MyController.prototype.getSelf);
+		const any = {} as any;
+		expect(it.length).toEqual(3);
+		expect(await it(any, any, any)).toBe(controller);
+	});
+
+	it('supports error handler', async () => {
+		const it = binder.bind(MyController.prototype.onError);
 		const any = {} as any;
 		const error = new Error();
 		expect(it.length).toEqual(4);
