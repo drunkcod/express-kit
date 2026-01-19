@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["ES2022"],
+    "target": "es2024",
+    "lib": ["ES2024"],
     "module": "NodeNext",
-    "target": "es2023",
 
     "strict": true,
     "declaration": true,
