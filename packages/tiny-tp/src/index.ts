@@ -1,5 +1,6 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Request, Response, NextFunction } from 'express';
+
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { IdGenerator } from './IdGenerator.js';
 
 const traceparentEx = /^([\da-f]{2})-([\da-f]{32})-([\da-f]{16})-([\da-f]{2})$/;
