@@ -21,7 +21,8 @@ type HandlerErrorFns<C> = { [P in keyof C as IsErrorHandler<C, P>]: C[P] };
 
 type ControllerFns<C> = HandlerFns<C> & HandlerErrorFns<C>;
 
-const safeResolve = <Fn extends (...args: any) => any>(fn: Fn, thisArg: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Promise.try(() => fn.call(thisArg, ...args));
+const tryCall = <Fn extends (...args: any) => any>(fn: Fn, thisArg: ThisParameterType<Fn>, ...args: Parameters<Fn>): Promise<Awaited<ReturnType<Fn>>> =>
+	Promise.try(Reflect.apply, fn, thisArg, args);
 
 interface AsyncFn<P extends [...any], T> {
 	(...args: [...P]): Promise<T>;
@@ -48,10 +49,10 @@ export function asyncHandler<T>(fn: (...args: any) => Promise<T>): RequestHandle
 		default:
 		case 2:
 		case 3:
-			return (req: express.Request, res: express.Response, next: express.NextFunction) => safeResolve(fn, null, req, res, next).catch(next);
+			return (req: express.Request, res: express.Response, next: express.NextFunction) => Promise.try(fn, req, res, next).catch(next);
 
 		case 4:
-			return (error: any, req: express.Request, res: express.Response, next: express.NextFunction) => safeResolve(fn, null, error, req, res, next).catch(next);
+			return (error: any, req: express.Request, res: express.Response, next: express.NextFunction) => Promise.try(fn, error, req, res, next).catch(next);
 	}
 }
 
@@ -81,7 +82,7 @@ export function controllerHandler<C>(factory: ControllerFactory<C>, m: (...args:
 			return async (req: express.Request<any>, res: express.Response, next: express.NextFunction) => {
 				try {
 					const c = factory(req, res);
-					return await safeResolve(m, c, req, res, next);
+					return await tryCall(m, c, req, res, next);
 				} catch (error) {
 					next(error);
 				}
@@ -91,7 +92,7 @@ export function controllerHandler<C>(factory: ControllerFactory<C>, m: (...args:
 			return async (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
 				try {
 					const c = factory(req, res);
-					return await safeResolve(m, c, error, req, res, next);
+					return await tryCall(m, c, error, req, res, next);
 				} catch (error) {
 					next(error);
 				}
