@@ -1,7 +1,6 @@
 import type express from 'express';
 
 type WithReturn<Type extends (...args: any) => any, R> = Type extends (...args: infer Args) => any ? (...args: Args) => R : never;
-type IsEmptyObject<T extends Record<PropertyKey, unknown>> = [keyof T] extends [never] ? true : false;
 
 type RequestHandler<T, Req extends express.Request<any> = express.Request<any>> =
 	| ((req: Req, res: express.Response<any>) => Promise<T>)
@@ -20,23 +19,10 @@ type ErrorHandler<T> = WithReturn<express.ErrorRequestHandler, Promise<T>>;
 type HandlerFns<C> = { [P in keyof C as IsRequestHandler<C, P>]: C[P] };
 type HandlerErrorFns<C> = { [P in keyof C as IsErrorHandler<C, P>]: C[P] };
 
-type ControllerHandlerFns<C> = IsEmptyObject<HandlerFns<C>> extends true ? never : HandlerFns<C>;
-type ControllerErrorFns<C> = IsEmptyObject<HandlerErrorFns<C>> extends true ? never : HandlerErrorFns<C>;
+type ControllerFns<C> = HandlerFns<C> & HandlerErrorFns<C>;
 
-type ControllerFns<C> = ControllerHandlerFns<C> | ControllerErrorFns<C>;
+const safeResolve = <Fn extends (...args: any) => any>(fn: Fn, thisArg: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Promise.try(() => fn.call(thisArg, ...args));
 
-type Unwrap<T> = T extends Promise<infer U> ? U : T;
-
-const safeResolve = <Fn extends (...args: any) => any>(fn: Fn, thisArg: ThisParameterType<Fn>, ...args: Parameters<Fn>) => {
-	type ReturnT = Unwrap<ReturnType<Fn>>;
-	try {
-		return Promise.resolve<ReturnT>(fn.call(thisArg, ...args));
-	} catch (reason) {
-		return Promise.reject<ReturnT>(reason);
-	}
-};
-
-type AnyFn = (...args: any[]) => any;
 interface AsyncFn<P extends [...any], T> {
 	(...args: [...P]): Promise<T>;
 }
@@ -51,8 +37,12 @@ export function bind<T extends Fns<T>, K extends keyof T>(target: T, fn: K): T[K
 	return as<Function>(target[fn]).bind(target);
 }
 
-export function asyncHandler<T, Req extends express.Request>(fn: AsyncFn<HandlerParameters<Req>, T>): RequestHandler<T>;
-export function asyncHandler<T, Req extends express.Request>(fn: AsyncFn<[error: Error, ...HandlerParameters<Req>], T>): ErrorHandler<T>;
+type AsyncHandler<T, Req extends express.Request> = AsyncFn<HandlerParameters<Req>, T>;
+type AsyncErrorHandler<T, Req extends express.Request> = AsyncFn<[error: Error, ...HandlerParameters<Req>], T>;
+
+export function asyncHandler<T, Req extends express.Request>(fn: AsyncHandler<T, Req>): RequestHandler<T>;
+export function asyncHandler<T, Req extends express.Request>(fn: AsyncErrorHandler<T, Req>): ErrorHandler<T>;
+export function asyncHandler<T, Req extends express.Request>(fn: AsyncHandler<T, Req> | AsyncErrorHandler<T, Req>): RequestHandler<any> | ErrorHandler<any>;
 export function asyncHandler<T>(fn: (...args: any) => Promise<T>): RequestHandler<any> | ErrorHandler<any> {
 	switch (fn.length) {
 		default:
@@ -65,8 +55,8 @@ export function asyncHandler<T>(fn: (...args: any) => Promise<T>): RequestHandle
 	}
 }
 
-export function boundAsyncHandler<C extends ControllerHandlerFns<C>, T>(x: C, m: keyof ControllerHandlerFns<C>): RequestHandler<unknown>;
-export function boundAsyncHandler<C extends ControllerErrorFns<C>, T>(x: C, m: keyof ControllerErrorFns<C>): ErrorHandler<unknown>;
+export function boundAsyncHandler<C extends HandlerFns<C>, T>(x: C, m: keyof HandlerFns<C>): RequestHandler<unknown>;
+export function boundAsyncHandler<C extends HandlerErrorFns<C>, T>(x: C, m: keyof HandlerErrorFns<C>): ErrorHandler<unknown>;
 export function boundAsyncHandler<C extends ControllerFns<C>>(x: C, m: keyof ControllerFns<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
 	return asyncHandler(bind(x, m));
 }
@@ -117,19 +107,17 @@ export class AsyncBinder<C extends ControllerFns<C>> {
 
 	constructor(private controller: C) {}
 
-	bind(m: keyof ControllerHandlerFns<C>): RequestHandler<unknown>;
-	bind(m: keyof ControllerErrorFns<C>): ErrorHandler<unknown>;
-	bind(m: keyof ControllerFns<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
-		return asyncHandler(bind(this.controller, m));
+	bind(m: keyof HandlerFns<C>): RequestHandler<unknown>;
+	bind(m: keyof HandlerErrorFns<C>): ErrorHandler<unknown>;
+	bind(fn: ControllerRequestFn<C>): RequestHandler<unknown>;
+	bind(fn: ControllerErrorFn<C>): ErrorHandler<unknown>;
+	bind(nameOrFn: keyof ControllerFns<C> | ControllerRequestFn<C> | ControllerErrorFn<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
+		if (typeof nameOrFn !== 'function') return asyncHandler(bind(this.controller, nameOrFn));
+		return asyncHandler(nameOrFn.bind(this.controller));
 	}
 }
 
 export class ControllerBinder<C extends ControllerFns<C>> {
-	static for<Controller extends ControllerFns<Controller>>(controller: Controller) {
-		const self = new AsyncBinder(controller);
-		return self.bind.bind(self);
-	}
-
 	constructor(private factory: ControllerFactory<C>) {}
 
 	bind(m: ControllerRequestFn<C>): RequestHandler<unknown>;

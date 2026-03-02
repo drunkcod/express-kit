@@ -145,6 +145,21 @@ describe('AsyncBinder', () => {
 		expect(it.length).toEqual(4);
 		expect(await it(error, any, any, any)).toEqual(error);
 	});
+
+	it('can bind to handler', async () => {
+		const { getValue } = MyController.prototype;
+		const it = binder.bind(getValue);
+		const any = {} as any;
+		expect(it.length).toEqual(3);
+		expect(await it(any, any, any)).toEqual(controller.value);
+	});
+	it('can bind to to error handler', async () => {
+		const it = binder.bind(MyController.prototype.onError);
+		const any = {} as any;
+		const err = new Error();
+		expect(it.length).toEqual(4);
+		expect(await it(err, any, any, any)).toEqual(err);
+	});
 });
 
 describe('controllerHandler', () => {
