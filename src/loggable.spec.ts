@@ -103,4 +103,17 @@ describe('asLoggableError', () => {
 			resultHasStack: true,
 		});
 	});
+
+	it('preserves name of Error objects', () => {
+		const err = new Error('test');
+		err.name = 'CustomError';
+		const loggable = asLoggableError(err);
+		expect((loggable as any).name).toBe('CustomError');
+	});
+
+	it('preserves standard Error name', () => {
+		const err = new Error('test');
+		const loggable = asLoggableError(err);
+		expect((loggable as any).name).toBe('Error');
+	});
 });

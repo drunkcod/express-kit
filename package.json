@@ -36,6 +36,9 @@
   ],
   "author": "Tobbe Gyllebring <tobbe@drunkcod.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.10.0"
+  },
   "workspaces": [
     "packages/*"
   ],

@@ -45,15 +45,13 @@ export function asyncHandler<T, Req extends express.Request>(fn: AsyncHandler<T,
 export function asyncHandler<T, Req extends express.Request>(fn: AsyncErrorHandler<T, Req>): ErrorHandler<T>;
 export function asyncHandler<T, Req extends express.Request>(fn: AsyncHandler<T, Req> | AsyncErrorHandler<T, Req>): RequestHandler<any> | ErrorHandler<any>;
 export function asyncHandler<T>(fn: (...args: any) => Promise<T>): RequestHandler<any> | ErrorHandler<any> {
-	switch (fn.length) {
-		default:
-		case 2:
-		case 3:
-			return (req: express.Request, res: express.Response, next: express.NextFunction) => Promise.try(fn, req, res, next).catch(next);
+	if (fn.length === 4) return asyncErrorHandler(fn);
+	return (req: express.Request, res: express.Response, next: express.NextFunction) => Promise.try(fn, req, res, next).catch(next);
+}
 
-		case 4:
-			return (error: any, req: express.Request, res: express.Response, next: express.NextFunction) => Promise.try(fn, error, req, res, next).catch(next);
-	}
+export function asyncErrorHandler<T, Req extends express.Request>(fn: AsyncErrorHandler<T, Req>): ErrorHandler<T>;
+export function asyncErrorHandler<T>(fn: (...args: any) => Promise<T>): ErrorHandler<any> {
+	return (error: any, req: express.Request, res: express.Response, next: express.NextFunction) => Promise.try(fn, error, req, res, next).catch(next);
 }
 
 export function boundAsyncHandler<C extends HandlerFns<C>, T>(x: C, m: keyof HandlerFns<C>): RequestHandler<unknown>;

@@ -1,5 +1,5 @@
 import { describe, it, test, expect } from '@jest/globals';
-import { AsyncBinder, asyncHandler, boundAsyncHandler, ControllerBinder, controllerHandler } from './index.js';
+import { AsyncBinder, asyncHandler, asyncErrorHandler, boundAsyncHandler, ControllerBinder, controllerHandler } from './index.js';
 import express from 'express';
 
 describe('asyncHandler', () => {

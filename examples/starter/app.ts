@@ -38,7 +38,7 @@ const PORT = 8080;
 	);
 
 	const server = app.listen(PORT, () => console.log("I'm listening..."));
-	// chandle ctrl+c SIGKILL/SIGABRT
+	// handle ctrl+c SIGINT/SIGTERM
 	registerShutdown(server, async () => {
 		//close and db connections or other event loop keep alives here.
 		console.log('bye...');

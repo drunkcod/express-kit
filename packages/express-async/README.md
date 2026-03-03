@@ -100,18 +100,6 @@ app.use(
 );
 ```
 
-## Why this is "better"?
-
-Most `async` wrappers for Express look like this:
-
-```typescript
-const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
-```
-
-Every time a request hits that route, a new anonymous arrow function is created. In high-traffic applications, this adds up to significant GC pressure.
-
-`@drunkcod/express-async` uses `Promise.try` and `Reflect.apply` to pipe arguments directly into your handlers without creating intermediate closures, making your Express application faster and more memory-efficient.
-
 ## License
 
 MIT

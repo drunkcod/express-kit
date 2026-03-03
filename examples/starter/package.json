@@ -12,7 +12,7 @@
   "author": "Tobbe Gyllebring (tobbe@drunkcod.com)",
   "license": "MIT",
   "dependencies": {
-    "@drunkcod/express-kit": "^0.0.16",
+    "@drunkcod/express-kit": "^0.0.21",
     "express": "^4.21.2"
   },
   "devDependencies": {

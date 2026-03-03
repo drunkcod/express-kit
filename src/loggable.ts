@@ -33,8 +33,9 @@ function asLoggableCause(cause: unknown, seen = new WeakSet<object>()): null | L
 
 	if (hasOwnJSON(cause)) return asLoggableCause(cause.toJSON(), seen);
 	if (cause instanceof Error || hasOwn(cause, 'cause')) {
-		const { message, stack, cause: innerCause, ...rest } = cause as any;
-		const r: { message: unknown; stack?: string; cause?: unknown } = { message };
+		const { name, message, stack, cause: innerCause, ...rest } = cause as any;
+		const r: { name?: string; message: unknown; stack?: string; cause?: unknown } = { message };
+		if (name) r.name = name;
 		if (innerCause) {
 			const loggableInner = asLoggableCause(innerCause, seen);
 			r.cause = loggableInner;
