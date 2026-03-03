@@ -79,24 +79,16 @@ export function controllerHandler<C>(factory: ControllerFactory<C>, m: (...args:
 		default:
 		case 2:
 		case 3:
-			return async (req: express.Request<any>, res: express.Response, next: express.NextFunction) => {
-				try {
-					const c = factory(req, res);
-					return await tryCall(m, c, req, res, next);
-				} catch (error) {
-					next(error);
-				}
-			};
+			return (req: express.Request<any>, res: express.Response, next: express.NextFunction) =>
+				Promise.try(factory, req, res)
+					.then((c) => tryCall(m, c, req, res, next))
+					.catch(next);
 
 		case 4:
-			return async (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-				try {
-					const c = factory(req, res);
-					return await tryCall(m, c, error, req, res, next);
-				} catch (error) {
-					next(error);
-				}
-			};
+			return (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) =>
+				Promise.try(factory, req, res)
+					.then((c) => tryCall(m, c, error, req, res, next))
+					.catch(next);
 	}
 }
 

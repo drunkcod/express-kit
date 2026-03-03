@@ -187,6 +187,27 @@ describe('controllerHandler', () => {
 		expect(args).toEqual([req, res]);
 	});
 
+	it('supports async factory', async () => {
+		const it = controllerHandler(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			return new MyController(42);
+		}, MyController.prototype.getValue);
+		const any = {} as any;
+		const result = await it(any, any, any);
+		expect(result).toEqual(42);
+	});
+
+	it('factory error is caught', async () => {
+		const failFacatory: () => MyController = () => {
+			throw new Error('factory-error');
+		};
+		const it = controllerHandler(failFacatory, MyController.prototype.getValue);
+		const any = {} as any;
+		let caught;
+		await it(any, any, (err) => (caught = err));
+		expect(caught).toMatchObject({ message: 'factory-error' });
+	});
+
 	it('with next', async () => {
 		let created = 0;
 		const it = controllerHandler(() => new MyController(++created), MyController.prototype.getT);
