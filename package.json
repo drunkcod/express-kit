@@ -43,13 +43,13 @@
     "packages/*"
   ],
   "dependencies": {
-    "@drunkcod/argis": "^0.0.15",
-    "@drunkcod/express-async": "^0.0.18"
+    "@drunkcod/argis": "^0.0.16",
+    "@drunkcod/express-async": "^0.0.19"
   },
   "devDependencies": {
     "@drunkcod/ts-jest-esm": "^0.0.3",
     "@jest/globals": "^30.2.0",
-    "@types/node": "^24.11.0",
+    "@types/node": "^24.12.0",
     "jest": "^30.2.0",
     "jest-util": "^30.2.0",
     "npm-run-all": "^4.1.5",
