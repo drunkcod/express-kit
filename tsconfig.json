@@ -9,7 +9,6 @@
     "outDir": "lib",
     "esModuleInterop": true,
     "rootDir": "./src",
-    "baseUrl": "./",
     "skipLibCheck": true,
     "isolatedModules": true
   },
