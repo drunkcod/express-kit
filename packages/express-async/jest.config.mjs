@@ -1,8 +1,19 @@
-import { makeEsmPreset } from '@drunkcod/ts-jest-esm';
-
-export default makeEsmPreset({
-  ignorePatterns: ['lib'],
-  'ts-jest': {
-    isolatedModules: true,
+export default {
+  rootDir: 'src',
+  transform: {
+    '^.+\\.[tj]s$': [
+      '@swc/jest',
+      {
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+          },
+        },
+      },
+    ],
   },
-});
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+};
