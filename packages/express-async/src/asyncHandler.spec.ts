@@ -2,6 +2,13 @@ import { describe, it, test, expect } from '@jest/globals';
 import { AsyncBinder, asyncHandler, asyncErrorHandler, boundAsyncHandler, ControllerBinder, controllerHandler } from './index.js';
 import express from 'express';
 
+describe('express', () => {
+	test('version', async () => {
+		const { version } = await import('express/package.json');
+		console.log(`running express@${version}`);
+	});
+});
+
 describe('asyncHandler', () => {
 	it('adds next arg for simple handler', () => {
 		const handler = async (req: express.Request, res: express.Response) => {};
