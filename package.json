@@ -29,11 +29,12 @@
     "cjs:fixup": "echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
     "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js",
     "test:all": "npm-run-all \"test --workspaces --include-workspace-root -- --verbose=false\" --silent",
-    "test:express4": "docker run -it --rm $(docker build -q --build-arg EXPRESS_VERSION=4 .)",
-    "test:express5": "docker run -it --rm $(docker build -q --build-arg EXPRESS_VERSION=5 .)",
+    "test:express4": "docker run -it --rm $(docker build -q -t express-kit:express4 --build-arg EXPRESS_VERSION=4 .)",
+    "test:express5": "docker run -it --rm $(docker build -q -t express-kit:express5 --build-arg EXPRESS_VERSION=5 .)",
+    "docker:cleanup": "docker image rm express-kit:express4 && docker image rm express-kit:express5 && docker builder prune -f --filter type=exec.cachemount",
     "build": "npm-run-all clean -p compile cjs:compile -s cjs:fixup --silent",
     "build:all": "npm-run-all \"build --workspaces --include-workspace-root\" --silent",
-    "build:release": "npm-run-all -s pre-publish -p test:express4 test:express5 -s build:all"
+    "build:release": "npm-run-all -s pre-publish -p test:express4 test:express5 -s docker:cleanup build:all"
   },
   "keywords": [
     "express"
