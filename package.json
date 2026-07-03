@@ -1,7 +1,7 @@
 {
   "name": "@drunkcod/express-kit",
   "type": "module",
-  "version": "0.0.26",
+  "version": "1.0.0",
   "description": "Express4 utility things",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -34,7 +34,8 @@
     "docker:cleanup": "docker image rm express-kit:express4 && docker image rm express-kit:express5 && docker builder prune -f --filter type=exec.cachemount",
     "build": "npm-run-all clean -p compile cjs:compile -s cjs:fixup --silent",
     "build:all": "npm-run-all \"build --workspaces --include-workspace-root\" --silent",
-    "build:release": "npm-run-all -s pre-publish -p test:express4 test:express5 -s docker:cleanup build:all"
+    "build:release": "npm-run-all -s pre-publish -p test:express4 test:express5 -s docker:cleanup build:all",
+    "modules:refresh": "rimraf node_modules package-lock.json && npm i --save"
   },
   "keywords": [
     "express"
@@ -58,7 +59,6 @@
     "jest": "^30.4.2",
     "npm-run-all2": "^8.0.4",
     "rimraf": "^6.1.3",
-    "ts-jest": "^29.4.11",
     "typescript": "^6.0.3"
   }
 }
