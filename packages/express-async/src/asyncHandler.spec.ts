@@ -79,6 +79,16 @@ class MyController {
 	}
 }
 
+interface CustomRequest extends express.Request {
+	customValue: any;
+}
+
+class CustomRequestController {
+	async getValue(req: CustomRequest, res: express.Response) {
+		return req.customValue;
+	}
+}
+
 describe('boundAsyncHandler', () => {
 	it('binds to instance', async () => {
 		const controller = new MyController();
@@ -113,16 +123,6 @@ describe('boundAsyncHandler', () => {
 		expect(it.length).toEqual(4);
 		expect(await it(error, any, any, any)).toEqual(error);
 	});
-
-	interface CustomRequest extends express.Request {
-		customValue: any;
-	}
-
-	class CustomRequestController {
-		async getValue(req: CustomRequest, res: express.Response) {
-			return req.customValue;
-		}
-	}
 
 	it('supports custom request types', async () => {
 		const controller = new CustomRequestController();
@@ -160,6 +160,13 @@ describe('AsyncBinder', () => {
 		expect(it.length).toEqual(3);
 		expect(await it(any, any, any)).toEqual(controller.value);
 	});
+
+	it('can bind custom request type', async () => {
+		const controller = new CustomRequestController();
+		const binder = new AsyncBinder(controller);
+		const it = binder.bind(CustomRequestController.prototype.getValue);
+	});
+
 	it('can bind to to error handler', async () => {
 		const it = binder.bind(MyController.prototype.onError);
 		const any = {} as any;

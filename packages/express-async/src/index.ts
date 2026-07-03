@@ -64,13 +64,16 @@ interface ControllerFactory<C> {
 	(req: express.Request, res: express.Response): C;
 }
 
-type ControllerRequestFn<C> =
-	| ((this: C, req: express.Request<any>, res: express.Response) => Promise<unknown>)
-	| ((this: C, req: express.Request<any>, res: express.Response, next: express.NextFunction) => Promise<unknown>);
+type ControllerRequestFn<C, Req extends express.Request<any> = express.Request<any>> =
+	| ((this: C, req: Req, res: express.Response) => Promise<unknown>)
+	| ((this: C, req: Req, res: express.Response, next: express.NextFunction) => Promise<unknown>);
 
 type ControllerErrorFn<C> = (this: C, error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<unknown>;
 
-export function controllerHandler<C>(factory: ControllerFactory<C>, m: ControllerRequestFn<C>): RequestHandler<unknown>;
+export function controllerHandler<C, Req extends express.Request<any> = express.Request<any>>(
+	factory: ControllerFactory<C>,
+	m: ControllerRequestFn<C, Req>,
+): RequestHandler<unknown>;
 export function controllerHandler<C>(factory: ControllerFactory<C>, m: ControllerErrorFn<C>): ErrorHandler<unknown>;
 export function controllerHandler<C>(factory: ControllerFactory<C>, m: (...args: any) => Promise<unknown>): RequestHandler<unknown> | ErrorHandler<unknown> {
 	switch (m.length) {
@@ -100,7 +103,7 @@ export class AsyncBinder<C extends ControllerFns<C>> {
 
 	bind(m: keyof HandlerFns<C>): RequestHandler<unknown>;
 	bind(m: keyof HandlerErrorFns<C>): ErrorHandler<unknown>;
-	bind(fn: ControllerRequestFn<C>): RequestHandler<unknown>;
+	bind<Req extends express.Request<any> = express.Request<any>>(fn: ControllerRequestFn<C, Req>): RequestHandler<unknown>;
 	bind(fn: ControllerErrorFn<C>): ErrorHandler<unknown>;
 	bind(nameOrFn: keyof ControllerFns<C> | ControllerRequestFn<C> | ControllerErrorFn<C>): RequestHandler<unknown> | ErrorHandler<unknown> {
 		if (typeof nameOrFn !== 'function') return asyncHandler(bind(this.controller, nameOrFn));
@@ -111,7 +114,7 @@ export class AsyncBinder<C extends ControllerFns<C>> {
 export class ControllerBinder<C extends ControllerFns<C>> {
 	constructor(private factory: ControllerFactory<C>) {}
 
-	bind(m: ControllerRequestFn<C>): RequestHandler<unknown>;
+	bind<Req extends express.Request<any> = express.Request<any>>(m: ControllerRequestFn<C, Req>): RequestHandler<unknown>;
 	bind(m: ControllerErrorFn<C>): ErrorHandler<unknown>;
 	bind(m: (...args: any) => Promise<unknown>): RequestHandler<unknown> | ErrorHandler<unknown> {
 		return controllerHandler(this.factory, m);
