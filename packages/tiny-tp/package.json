@@ -1,7 +1,7 @@
 {
   "name": "@drunkcod/tiny-tp",
   "type": "module",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Tiny Traceparent.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
